@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "context-optimizer",
+  "version": "0.2.0",
+  "description": "Generate compact, read-only context snapshots for Microsoft, Python and JavaScript projects.",
+  "author": {"name": "Yansahka", "url": "https://github.com/Yansahka"},
+  "repository": "https://github.com/Yansahka/ai_plugins",
+  "homepage": "https://github.com/Yansahka/ai_plugins/tree/main/plugins/context-optimizer",
+  "keywords": ["context", "tokens", "power-platform", "python", "typescript"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "ContextOptimizer",
+        "shortDescription": "Compresser le contexte sans modifier les sources",
+        "longDescription": "Captures locales et extracteurs modulaires pour Canvas/Power Fx/Power Automate, Python et JavaScript/TypeScript. Sortie externe au projet, sans écrasement.",
+        "developerName": "Yansahka",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "defaultPrompt": ["Utilise ContextOptimizer pour produire un Context_Ready.txt de ce projet, sans modifier ses sources."]
+      }
+    }
+  }
+}

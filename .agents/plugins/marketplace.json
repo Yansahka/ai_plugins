@@ -1,0 +1,12 @@
+{
+  "name": "yansahka-ai-plugins",
+  "interface": {"displayName": "Yansahka AI Plugins"},
+  "plugins": [
+    {
+      "name": "context-optimizer",
+      "source": {"source": "local", "path": "./plugins/context-optimizer"},
+      "policy": {"installation": "AVAILABLE", "authentication": "ON_USE"},
+      "category": "Productivity"
+    }
+  ]
+}

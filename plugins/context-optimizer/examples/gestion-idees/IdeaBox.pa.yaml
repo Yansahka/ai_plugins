@@ -1,0 +1,362 @@
+# SIMULATION : représentation textuelle Canvas ; non validée dans Power Apps Studio.
+# Formules en locale en-US : arguments ',' ; enchaînement ';'.
+App:
+  Properties:
+    StartScreen: =scrAccueil
+    OnStart: |-
+      =// Initialisation des catégories disponibles pour le filtrage des idées.
+      ClearCollect(
+          colCategories,
+          { Value: "Toutes" },
+          { Value: "Tech" },
+          { Value: "Design" },
+          { Value: "Business" }
+      );
+      // Les termes suivants sont fictifs et servent à illustrer le contrôle client.
+      ClearCollect(
+          colForbidden,
+          { Value: "spam" },
+          { Value: "insulte" }
+      );
+      Set( gblCategorie, "Toutes" );
+      Set( gblUserEmail, Lower( User().Email ) );
+      Set( gblVoteBusy, false )
+Screens:
+  scrAccueil:
+    Properties:
+      Fill: =RGBA( 245, 247, 250, 1 )
+      LoadingSpinnerColor: =RGBA( 32, 68, 128, 1 )
+      OnVisible: |-
+        =// Recharge les listes pour afficher les dernières propositions et les votes.
+        Refresh( Idees );
+        Refresh( Votes )
+    Children:
+      - lblTitre:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Gestion d'idées"
+            AccessibleLabel: ="Titre de l'application de gestion d'idées"
+            X: =32
+            Y: =24
+            Width: =640
+            Height: =56
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Bold
+            Size: =28
+            Color: =RGBA( 32, 68, 128, 1 )
+            Fill: =RGBA( 0, 0, 0, 0 )
+            BorderColor: =RGBA( 0, 0, 0, 0 )
+            PaddingLeft: =12
+            PaddingRight: =12
+            PaddingTop: =8
+            PaddingBottom: =8
+      - drpCategorie:
+          Control: Classic/DropDown@2.3.1
+          Properties:
+            Items: =colCategories
+            Default: ="Toutes"
+            OnChange: |-
+              =// Met à jour la catégorie utilisée dans le filtre de la galerie.
+              Set( gblCategorie, Self.Selected.Value )
+            X: =32
+            Y: =104
+            Width: =320
+            Height: =48
+            Font: =Font.'Open Sans'
+            Size: =14
+            Color: =RGBA( 32, 32, 32, 1 )
+            Fill: =RGBA( 255, 255, 255, 1 )
+            BorderColor: =RGBA( 208, 214, 224, 1 )
+            BorderThickness: =1
+            HoverFill: =RGBA( 230, 238, 250, 1 )
+            PaddingLeft: =12
+      - btnNouvelleIdee:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Proposer une idée"
+            OnSelect: |-
+              =NewForm( frmIdee );
+              Navigate( scrSoumission, ScreenTransition.Fade )
+            X: =968
+            Y: =104
+            Width: =320
+            Height: =48
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Size: =16
+            Color: =RGBA( 255, 255, 255, 1 )
+            Fill: =RGBA( 32, 68, 128, 1 )
+            HoverFill: =RGBA( 24, 52, 100, 1 )
+            PressedFill: =RGBA( 16, 36, 80, 1 )
+            BorderThickness: =0
+            RadiusTopLeft: =8
+            RadiusTopRight: =8
+            RadiusBottomLeft: =8
+            RadiusBottomRight: =8
+      - galIdees:
+          Control: Gallery@2.15.0
+          Variant: BrowseLayout_Vertical_TwoTextOneImageVariant_ver5.0
+          Properties:
+            Items: |-
+              =// Filtre les idées par catégorie, puis trie par nombre de votes décroissant.
+              SortByColumns(
+                  Filter(
+                      Idees,
+                      gblCategorie = "Toutes" || Categorie.Value = gblCategorie
+                  ),
+                  "NombreVotes",
+                  SortOrder.Descending
+              )
+            X: =32
+            Y: =184
+            Width: =1256
+            Height: =560
+            Fill: =RGBA( 255, 255, 255, 1 )
+            BorderColor: =RGBA( 226, 230, 236, 1 )
+            BorderThickness: =1
+            TemplateSize: =156
+            TemplatePadding: =12
+          Children:
+            - lblIdeeTitre:
+                Control: Label@2.5.1
+                Properties:
+                  Text: =ThisItem.Title
+                  X: =20
+                  Y: =16
+                  Width: =800
+                  Height: =36
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =18
+                  Color: =RGBA( 24, 32, 48, 1 )
+                  PaddingLeft: =4
+                  PaddingTop: =4
+            - lblStatut:
+                Control: Label@2.5.1
+                Properties:
+                  Text: =ThisItem.Statut.Value
+                  X: =20
+                  Y: =64
+                  Width: =200
+                  Height: =32
+                  Font: =Font.'Open Sans'
+                  Size: =13
+                  Color: =If( ThisItem.Statut.Value = "Validé", Color.DarkGreen, Color.DarkOrange )
+                  Fill: =RGBA( 245, 247, 250, 1 )
+                  PaddingLeft: =8
+                  PaddingRight: =8
+            - lblVotes:
+                Control: Label@2.5.1
+                Properties:
+                  Text: =Text( ThisItem.NombreVotes ) & " votes"
+                  X: =860
+                  Y: =20
+                  Width: =160
+                  Height: =36
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Bold
+                  Size: =16
+                  Color: =RGBA( 32, 68, 128, 1 )
+                  Align: =Align.Center
+                  PaddingTop: =4
+            - btnVoter:
+                Control: Classic/Button@2.2.0
+                Properties:
+                  Text: ="Voter"
+                  DisplayMode: =If( gblVoteBusy || ThisItem.Statut.Value <> "En cours", DisplayMode.Disabled, DisplayMode.Edit )
+                  OnSelect: |-
+                    =// Vérifie l'identité de l'utilisateur et l'existence de son vote.
+                    If(
+                        !gblVoteBusy,
+                        Set( gblVoteBusy, true );
+                        With(
+                            {
+                                currentIdea: LookUp( Idees, ID = ThisItem.ID ),
+                                existingVote: LookUp(
+                                    Votes,
+                                    IdeaId = ThisItem.ID && VoterEmail = gblUserEmail
+                                )
+                            },
+                            If(
+                                currentIdea.Statut.Value <> "En cours",
+                                Notify( "Le vote est fermé.", NotificationType.Warning ),
+                                !IsBlank( existingVote ),
+                                Notify( "Vous avez déjà voté pour cette idée.", NotificationType.Information ),
+                                IfError(
+                                    // Enregistre le vote individuel avant de mettre à jour le compteur.
+                                    Patch(
+                                        Votes,
+                                        Defaults( Votes ),
+                                        {
+                                            Title: Text( ThisItem.ID ) & ":" & gblUserEmail,
+                                            IdeaId: ThisItem.ID,
+                                            VoterEmail: gblUserEmail
+                                        }
+                                    );
+                                    Patch(
+                                        Idees,
+                                        currentIdea,
+                                        { NombreVotes: Coalesce( currentIdea.NombreVotes, 0 ) + 1 }
+                                    );
+                                    Notify( "Votre vote a été enregistré.", NotificationType.Success ),
+                                    Notify( "Erreur pendant le vote.", NotificationType.Error )
+                                )
+                            )
+                        );
+                        Set( gblVoteBusy, false )
+                    )
+                  X: =1040
+                  Y: =76
+                  Width: =160
+                  Height: =44
+                  Font: =Font.'Open Sans'
+                  FontWeight: =FontWeight.Semibold
+                  Size: =14
+                  Color: =RGBA( 255, 255, 255, 1 )
+                  Fill: =RGBA( 32, 68, 128, 1 )
+                  HoverFill: =RGBA( 24, 52, 100, 1 )
+                  DisabledFill: =RGBA( 192, 198, 208, 1 )
+                  BorderThickness: =0
+                  RadiusTopLeft: =6
+                  RadiusBottomRight: =6
+  scrSoumission:
+    Properties:
+      Fill: =RGBA( 245, 247, 250, 1 )
+    Children:
+      - frmIdee:
+          Control: Form@2.4.4
+          Variant: Classic
+          Properties:
+            DataSource: =Idees
+            DefaultMode: =FormMode.New
+            OnSuccess: |-
+              =Notify( "Votre idée a été soumise.", NotificationType.Success );
+              ResetForm( frmIdee );
+              Navigate( scrAccueil, ScreenTransition.Fade )
+            OnFailure: =Notify( frmIdee.Error, NotificationType.Error )
+            X: =32
+            Y: =88
+            Width: =1000
+            Height: =520
+            BorderColor: =RGBA( 208, 214, 224, 1 )
+          Children:
+            - dcTitre:
+                Control: TypedDataCard@1.0.7
+                Variant: ClassicTextualEdit
+                Properties:
+                  DataField: ="Title"
+                  Default: =ThisItem.Title
+                  Required: =true
+                  Update: =Trim( txtTitre.Text )
+                  Width: =1000
+                  Height: =96
+                Children:
+                  - txtTitre:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Parent.Default
+                        HintText: ="Un titre clair pour votre idée"
+                        MaxLength: =150
+                        X: =24
+                        Y: =32
+                        Width: =920
+                        Height: =48
+                        Font: =Font.'Open Sans'
+                        Size: =14
+                        Fill: =RGBA( 255, 255, 255, 1 )
+                        BorderColor: =RGBA( 208, 214, 224, 1 )
+                        PaddingLeft: =12
+            - dcDescription:
+                Control: TypedDataCard@1.0.7
+                Variant: ClassicTextualEdit
+                Properties:
+                  DataField: ="Description"
+                  Default: =ThisItem.Description
+                  Update: =Trim( txtDescription.Text )
+                  Required: =true
+                  Width: =1000
+                  Height: =160
+                Children:
+                  - txtDescription:
+                      Control: Classic/TextInput@2.3.2
+                      Properties:
+                        Default: =Parent.Default
+                        Mode: =TextMode.MultiLine
+                        HintText: ="Décrivez le problème et la solution proposée"
+                        X: =24
+                        Y: =32
+                        Width: =920
+                        Height: =112
+                        Font: =Font.'Open Sans'
+                        Size: =14
+                        Fill: =RGBA( 255, 255, 255, 1 )
+                        BorderColor: =RGBA( 208, 214, 224, 1 )
+                        PaddingLeft: =12
+            - dcCategorie:
+                Control: TypedDataCard@1.0.7
+                Variant: ClassicComboBoxEdit
+                Properties:
+                  DataField: ="Categorie"
+                  Required: =true
+                  Update: =drpNouvelleCategorie.Selected
+                  Width: =1000
+                  Height: =96
+                Children:
+                  - drpNouvelleCategorie:
+                      Control: Classic/DropDown@2.3.1
+                      Properties:
+                        Items: =Filter( colCategories, Value <> "Toutes" )
+                        Default: ="Tech"
+                        X: =24
+                        Y: =32
+                        Width: =440
+                        Height: =48
+                        Font: =Font.'Open Sans'
+                        Fill: =RGBA( 255, 255, 255, 1 )
+                        BorderColor: =RGBA( 208, 214, 224, 1 )
+            - dcStatut:
+                Control: TypedDataCard@1.0.7
+                Variant: ClassicComboBoxEdit
+                Properties:
+                  DataField: ="Statut"
+                  Update: '={Value:"En cours"}'
+                  Visible: =false
+                  Width: =1000
+                  Height: =0
+            - dcNombreVotes:
+                Control: TypedDataCard@1.0.7
+                Variant: ClassicNumberEdit
+                Properties:
+                  DataField: ="NombreVotes"
+                  Update: =0
+                  Visible: =false
+                  Width: =1000
+                  Height: =0
+      - btnSoumettre:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Soumettre mon idée"
+            DisplayMode: =If( frmIdee.Valid, DisplayMode.Edit, DisplayMode.Disabled )
+            OnSelect: |-
+              =// Vérifie le titre et la description avant l'enregistrement SharePoint.
+              With(
+                  { content: Lower( Trim( txtTitre.Text & " " & txtDescription.Text ) ) },
+                  If(
+                      IsBlank( Trim( txtTitre.Text ) ) || IsBlank( Trim( txtDescription.Text ) ),
+                      Notify( "Le titre et la description sont obligatoires.", NotificationType.Warning ),
+                      CountIf( colForbidden, Value in content ) > 0,
+                      Notify( "Veuillez retirer les mots interdits.", NotificationType.Error ),
+                      SubmitForm( frmIdee )
+                  )
+              )
+            X: =728
+            Y: =640
+            Width: =304
+            Height: =48
+            Font: =Font.'Open Sans'
+            FontWeight: =FontWeight.Semibold
+            Size: =16
+            Fill: =RGBA( 32, 68, 128, 1 )
+            Color: =RGBA( 255, 255, 255, 1 )
+            HoverFill: =RGBA( 24, 52, 100, 1 )
+            BorderThickness: =0

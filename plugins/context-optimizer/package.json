@@ -1,0 +1,18 @@
+{
+  "name": "@yansahka/context-optimizer",
+  "version": "0.2.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "description": "Read-only project snapshots and modular context extractors for AI agents",
+  "engines": {"node": ">=20"},
+  "bin": {"context-optimizer": "src/cli.mjs"},
+  "scripts": {
+    "test": "node --test",
+    "validate": "node scripts/validate-package.mjs",
+    "demo": "node scripts/demo.mjs"
+  },
+  "files": ["src", "skills", "scripts", "test", "examples", "docs", "README.md", "CHANGELOG.md", "plugin.json", ".codex-plugin", ".claude-plugin"],
+  "repository": {"type": "git", "url": "https://github.com/Yansahka/ai_plugins.git", "directory": "plugins/context-optimizer"},
+  "dependencies": {"yaml": "^2.8.1", "typescript": "^5.9.3", "js-tiktoken": "^1.0.21"}
+}

@@ -1,0 +1,12 @@
+{
+  "name": "yansahka-ai-plugins",
+  "owner": {"name": "Yansahka"},
+  "plugins": [
+    {
+      "name": "context-optimizer",
+      "description": "Snapshots de contexte compacts, sans modification des sources.",
+      "source": "./plugins/context-optimizer",
+      "version": "0.2.0"
+    }
+  ]
+}

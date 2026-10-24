@@ -1,0 +1,8 @@
+{
+  "name": "context-optimizer",
+  "version": "0.2.0",
+  "description": "Generate compact project context without modifying source files.",
+  "author": {"name": "Yansahka"},
+  "repository": "https://github.com/Yansahka/ai_plugins",
+  "skills": "./skills/"
+}

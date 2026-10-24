@@ -1,0 +1,13 @@
+{
+  "name": "context-optimizer",
+  "version": "0.2.0",
+  "description": "Compact read-only context snapshots for AI agents.",
+  "author": {"name": "Yansahka"},
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "ContextOptimizer",
+    "shortDescription": "Compresser le contexte sans modifier les sources",
+    "developerName": "Yansahka",
+    "category": "Productivity"
+  }
+}

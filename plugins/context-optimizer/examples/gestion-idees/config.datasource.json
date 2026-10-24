@@ -1,0 +1,25 @@
+{
+  "simulation": true,
+  "locale": "en-US",
+  "backend": "SharePoint",
+  "lists": {
+    "Idees": {
+      "ID": "number,primary",
+      "Title": "text,required,max150",
+      "Description": "multiline,required",
+      "Categorie": "choice:Tech|Design|Business",
+      "Statut": "choice:En cours|Validé|Rejeté",
+      "NombreVotes": "number,default0"
+    },
+    "Votes": {
+      "ID": "number,primary",
+      "Title": "text:IdeaId:email",
+      "IdeaId": "number,foreign:Idees.ID",
+      "VoterEmail": "text,lowercase"
+    }
+  },
+  "knownLimits": [
+    "Vote: contrôle client; absence d'unicité serveur et de transaction; concurrence et écritures partielles possibles.",
+    "Mots interdits: recherche de sous-chaîne côté client; ne remplace pas une validation serveur."
+  ]
+}
